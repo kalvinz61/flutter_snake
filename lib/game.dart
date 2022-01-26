@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'piece.dart';
 import 'dart:math';
-import 'dart:developer';
+import 'direction.dart';
 
 class GamePage extends StatefulWidget {
   @override
@@ -11,8 +12,31 @@ class GamePage extends StatefulWidget {
 class _GamePageState extends State<GamePage> {
   int? upperBoundX, upperBoundY, lowerBoundX, lowerBoundY;
   double? screenWidth, screenHeight;
-  int step = 20;
+  //size of each snake piece
+  int step = 30;
+  //defualt length for snake
+  int length = 5;
   List<Offset> positions = [];
+  Direction direction = Direction.right;
+  Timer? timer;
+  void changeSpeed() {
+    if (timer != null && timer!.isActive) {
+      timer!.cancel();
+    }
+    timer = Timer.periodic(Duration(milliseconds: 2000), (timer) {
+      setState(() {});
+    });
+  }
+
+  void restart() {
+    changeSpeed();
+  }
+
+  @override
+  initState() {
+    super.initState();
+    restart();
+  }
 
   //Helper fn to round number down to nearest ten. Ex. screenWidth of 408 => 400
   int getNearestTens(int num) {
@@ -24,6 +48,7 @@ class _GamePageState extends State<GamePage> {
     return output;
   }
 
+  //Offset takes 2 parameters, X and Y axis.
   Offset getRandomPosition() {
     Offset position;
     int posX = Random().nextInt(upperBoundX!) + lowerBoundX!;
@@ -35,21 +60,63 @@ class _GamePageState extends State<GamePage> {
   }
 
   void draw() {
+    //if no pieces of snake then create random piece and add to positions
     if (positions.isEmpty) {
       positions.add(getRandomPosition());
     }
+    //while the snake != the default length, duplicate position until full
+    while (length > positions.length) {
+      positions.add(positions[positions.length - 1]);
+    }
+    //move each snake piece forward
+    for (var i = positions.length - 1; i < 0; i--) {
+      positions[i] = positions[i - 1];
+    }
+    //move head of snake forward by getting next position from input.
+    positions[0] = getNextPosition(positions[0]);
   }
 
+  Offset getNextPosition(Offset position) {
+    Offset nextPosition;
+
+    switch (direction) {
+      case Direction.right:
+        {
+          nextPosition = Offset(position.dx + step, position.dy);
+        }
+        break;
+      case Direction.left:
+        {
+          nextPosition = Offset(position.dx - step, position.dy);
+        }
+        break;
+      case Direction.up:
+        {
+          nextPosition = Offset(position.dx, position.dy + step);
+        }
+        break;
+      case Direction.down:
+        {
+          nextPosition = Offset(position.dx, position.dy - step);
+        }
+    }
+    return nextPosition;
+  }
+
+  //Positions is an Offset type, dx and dy are built in fns that returns doubles. converting to int to use as Piece's posX and posY
   List<Piece> getPieces() {
     final pieces = <Piece>[];
     draw();
 
-    pieces.add(Piece(
-      posX: positions[0].dx.toInt(),
-      posY: positions[0].dy.toInt(),
-      size: step,
-      color: Colors.red,
-    ));
+    for (var i = 0; i < length; ++i) {
+      pieces.add(Piece(
+        posX: positions[i].dx.toInt(),
+        posY: positions[i].dy.toInt(),
+        size: step,
+        color: Colors.red,
+      ));
+    }
+
     return pieces;
   }
 

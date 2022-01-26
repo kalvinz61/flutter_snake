@@ -24,7 +24,7 @@ class _PieceState extends State<Piece> {
                 height: widget.size!.toDouble(),
                 decoration: BoxDecoration(
                   color: widget.color,
-                  borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                  borderRadius: const BorderRadius.all(Radius.circular(3)),
                   border: Border.all(width: 2.0, color: Colors.white),
                 ))));
   }
