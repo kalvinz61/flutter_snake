@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'piece.dart';
 import 'dart:math';
 import 'direction.dart';
+import 'control_panel.dart';
 
 class GamePage extends StatefulWidget {
+  const GamePage({Key? key}) : super(key: key);
   @override
   _GamePageState createState() => _GamePageState();
 }
@@ -16,16 +18,27 @@ class _GamePageState extends State<GamePage> {
   int step = 30;
   //defualt length for snake
   int length = 5;
+  //list of snake piece postions
   List<Offset> positions = [];
+  //default starting direction
   Direction direction = Direction.right;
   Timer? timer;
+
   void changeSpeed() {
     if (timer != null && timer!.isActive) {
       timer!.cancel();
     }
-    timer = Timer.periodic(Duration(milliseconds: 2000), (timer) {
+    timer = Timer.periodic(const Duration(milliseconds: 400), (timer) {
       setState(() {});
     });
+  }
+
+  Widget getControls() {
+    return ControlPanel(
+      onTapped: (Direction newDirection) {
+        direction = newDirection;
+      },
+    );
   }
 
   void restart() {
@@ -69,7 +82,7 @@ class _GamePageState extends State<GamePage> {
       positions.add(positions[positions.length - 1]);
     }
     //move each snake piece forward
-    for (var i = positions.length - 1; i < 0; i--) {
+    for (var i = positions.length - 1; i > 0; i--) {
       positions[i] = positions[i - 1];
     }
     //move head of snake forward by getting next position from input.
@@ -92,12 +105,12 @@ class _GamePageState extends State<GamePage> {
         break;
       case Direction.up:
         {
-          nextPosition = Offset(position.dx, position.dy + step);
+          nextPosition = Offset(position.dx, position.dy - step);
         }
         break;
       case Direction.down:
         {
-          nextPosition = Offset(position.dx, position.dy - step);
+          nextPosition = Offset(position.dx, position.dy + step);
         }
     }
     return nextPosition;
@@ -138,9 +151,7 @@ class _GamePageState extends State<GamePage> {
         body: Container(
             color: Colors.amber,
             child: Stack(
-              children: [
-                Stack(children: getPieces()),
-              ],
+              children: [Stack(children: getPieces()), getControls()],
             )));
   }
 }
