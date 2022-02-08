@@ -18,11 +18,18 @@ class _GamePageState extends State<GamePage> {
   int step = 30;
   //defualt length for snake
   int length = 5;
+  //food position
+  Offset? foodPosition;
+  int score = 0;
+  double speed = 1.0;
+  late Piece food;
   //list of snake piece postions
   List<Offset> positions = [];
   //default starting direction
   Direction direction = Direction.right;
   Timer? timer;
+  var foodColor = Colors.red;
+  var snakeColor = Colors.black;
 
   void changeSpeed() {
     if (timer != null && timer!.isActive) {
@@ -72,6 +79,7 @@ class _GamePageState extends State<GamePage> {
     return position;
   }
 
+  //draw snake
   void draw() {
     //if no pieces of snake then create random piece and add to positions
     if (positions.isEmpty) {
@@ -87,6 +95,26 @@ class _GamePageState extends State<GamePage> {
     }
     //move head of snake forward by getting next position from input.
     positions[0] = getNextPosition(positions[0]);
+  }
+
+  //draw food
+  void drawFood() {
+    //if fooPisition ==nul
+    foodPosition ??= getRandomPosition();
+
+    food = Piece(
+        posX: foodPosition?.dx.toInt(),
+        posY: foodPosition?.dy.toInt(),
+        size: step,
+        color: foodColor);
+
+    //eating food
+    if (positions[0] == foodPosition) {
+      length++;
+      score = score + 5;
+      speed += .25;
+      foodPosition = getRandomPosition();
+    }
   }
 
   Offset getNextPosition(Offset position) {
@@ -120,14 +148,16 @@ class _GamePageState extends State<GamePage> {
   List<Piece> getPieces() {
     final pieces = <Piece>[];
     draw();
-
+    drawFood();
     for (var i = 0; i < length; ++i) {
+      if (i >= positions.length) {
+        continue;
+      }
       pieces.add(Piece(
-        posX: positions[i].dx.toInt(),
-        posY: positions[i].dy.toInt(),
-        size: step,
-        color: Colors.red,
-      ));
+          posX: positions[i].dx.toInt(),
+          posY: positions[i].dy.toInt(),
+          size: step,
+          color: snakeColor));
     }
 
     return pieces;
@@ -148,10 +178,11 @@ class _GamePageState extends State<GamePage> {
     upperBoundX = getNearestTens(screenWidth!.toInt() - step);
 
     return Scaffold(
-        body: Container(
-            color: Colors.amber,
-            child: Stack(
-              children: [Stack(children: getPieces()), getControls()],
-            )));
+      body: Container(
+          color: Colors.amber,
+          child: Stack(
+            children: [Stack(children: getPieces()), getControls(), food],
+          )),
+    );
   }
 }

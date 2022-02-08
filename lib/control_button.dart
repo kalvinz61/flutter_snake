@@ -15,7 +15,7 @@ class ControlButton extends StatelessWidget {
             child: FloatingActionButton(
                 backgroundColor: Colors.green,
                 elevation: 0,
-                onPressed: this.onPressed,
-                child: this.icon)));
+                onPressed: onPressed,
+                child: icon)));
   }
 }
